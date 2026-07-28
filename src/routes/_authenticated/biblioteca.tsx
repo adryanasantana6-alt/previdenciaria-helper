@@ -28,6 +28,8 @@ const MATERIAS = [
   "Aposentadoria especial",
   "Aposentadoria PCD",
   "Auxílio-doença",
+  "Auxílio-acidente",
+
   "Aposentadoria por invalidez",
   "BPC/LOAS",
   "Salário-maternidade",
