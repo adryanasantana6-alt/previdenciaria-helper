@@ -6,8 +6,9 @@
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#0F1E3D",
-  "theme_color": "#0F1E3D",
+  "background_color": "#6B2E32",
+  "theme_color": "#6B2E32",
+
   "lang": "pt-BR",
   "icons": [
     { "src": "/app-icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
