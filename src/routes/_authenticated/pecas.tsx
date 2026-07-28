@@ -201,73 +201,151 @@ function PecasPage() {
         )}
       </div>
 
-      <Dialog open={open} onOpenChange={setOpen}>
+      <Dialog
+        open={open}
+        onOpenChange={(o) => {
+          setOpen(o);
+          if (!o) resetForm();
+        }}
+      >
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="font-serif text-2xl">Nova peça previdenciária</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 pt-2">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>Tipo *</Label>
-                <Select value={form.tipo} onValueChange={(v) => setForm({ ...form, tipo: v })}>
-                  <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
-                  <SelectContent>
-                    {TIPOS.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
-                  </SelectContent>
-                </Select>
+
+          <Tabs value={tab} onValueChange={setTab} className="pt-2">
+            <TabsList className="grid grid-cols-2 w-full">
+              <TabsTrigger value="dados">Dados do caso</TabsTrigger>
+              <TabsTrigger value="anexos">
+                Anexos {anexos.length > 0 && <span className="ml-1 text-xs opacity-70">({anexos.length})</span>}
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="dados" className="space-y-4 pt-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>Tipo *</Label>
+                  <Select value={form.tipo} onValueChange={(v) => setForm({ ...form, tipo: v })}>
+                    <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                    <SelectContent>
+                      {TIPOS.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Matéria *</Label>
+                  <Select value={form.materia} onValueChange={(v) => setForm({ ...form, materia: v })}>
+                    <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                    <SelectContent>
+                      {MATERIAS.map((m) => <SelectItem key={m} value={m}>{m}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
               <div>
-                <Label>Matéria *</Label>
-                <Select value={form.materia} onValueChange={(v) => setForm({ ...form, materia: v })}>
-                  <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
-                  <SelectContent>
-                    {MATERIAS.map((m) => <SelectItem key={m} value={m}>{m}</SelectItem>)}
-                  </SelectContent>
-                </Select>
+                <Label>Cliente (nome completo) *</Label>
+                <Input value={form.cliente} onChange={(e) => setForm({ ...form, cliente: e.target.value })} />
               </div>
-            </div>
-            <div>
-              <Label>Cliente (nome completo) *</Label>
-              <Input value={form.cliente} onChange={(e) => setForm({ ...form, cliente: e.target.value })} />
-            </div>
-            <div>
-              <Label>Fatos do caso *</Label>
-              <Textarea
-                rows={5}
-                value={form.fatos}
-                onChange={(e) => setForm({ ...form, fatos: e.target.value })}
-                placeholder="Ex: cliente com 62 anos, 20 anos de contribuição, atividade rural comprovada por documentos X e Y..."
-              />
-            </div>
-            <div>
-              <Label>Pedido principal *</Label>
-              <Textarea
-                rows={3}
-                value={form.pedido}
-                onChange={(e) => setForm({ ...form, pedido: e.target.value })}
-                placeholder="Ex: concessão de aposentadoria por idade rural com DIB na DER"
-              />
-            </div>
-            <div>
-              <Label>Informações adicionais</Label>
-              <Textarea
-                rows={3}
-                value={form.extras}
-                onChange={(e) => setForm({ ...form, extras: e.target.value })}
-                placeholder="Documentos anexos, particularidades, jurisprudência específica a citar..."
-              />
-            </div>
-            <Button onClick={submit} disabled={loading} className="w-full" size="lg">
-              {loading ? (
-                <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Gerando peça...</>
-              ) : (
-                <><Sparkles className="w-4 h-4 mr-2" /> Gerar peça</>
+              <div>
+                <Label>Fatos do caso *</Label>
+                <Textarea
+                  rows={5}
+                  value={form.fatos}
+                  onChange={(e) => setForm({ ...form, fatos: e.target.value })}
+                  placeholder="Ex: cliente com 62 anos, 20 anos de contribuição, atividade rural comprovada por documentos X e Y..."
+                />
+              </div>
+              <div>
+                <Label>Pedido principal *</Label>
+                <Textarea
+                  rows={3}
+                  value={form.pedido}
+                  onChange={(e) => setForm({ ...form, pedido: e.target.value })}
+                  placeholder="Ex: concessão de aposentadoria por idade rural com DIB na DER"
+                />
+              </div>
+              <div>
+                <Label>Informações adicionais</Label>
+                <Textarea
+                  rows={3}
+                  value={form.extras}
+                  onChange={(e) => setForm({ ...form, extras: e.target.value })}
+                  placeholder="Particularidades, jurisprudência específica a citar..."
+                />
+              </div>
+            </TabsContent>
+
+            <TabsContent value="anexos" className="space-y-4 pt-4">
+              <div>
+                <Label className="flex items-center gap-2">
+                  <Paperclip className="w-4 h-4" /> Processo administrativo e documentos
+                </Label>
+                <p className="text-xs text-muted-foreground mt-1 mb-3">
+                  Anexe o processo administrativo do INSS, CNIS, laudos médicos, decisões, CTPS, PPP etc.
+                  O texto é extraído e enviado à IA para fundamentar a peça com dados reais (DER, DIB, NB, motivos de indeferimento…).
+                  Formatos: <strong>PDF, DOCX, TXT</strong>. Máx. 25 MB por arquivo.
+                </p>
+
+                <div
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    handleFiles(e.dataTransfer.files);
+                  }}
+                  className="border-2 border-dashed border-border rounded-md p-6 text-center hover:border-accent transition-colors cursor-pointer"
+                  onClick={() => fileRef.current?.click()}
+                >
+                  <Upload className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
+                  <p className="text-sm">
+                    {extraindo ? "Extraindo texto…" : "Clique ou arraste arquivos aqui"}
+                  </p>
+                  <input
+                    ref={fileRef}
+                    type="file"
+                    multiple
+                    accept=".pdf,.docx,.txt,.md,application/pdf,text/plain"
+                    className="hidden"
+                    onChange={(e) => handleFiles(e.target.files)}
+                  />
+                </div>
+              </div>
+
+              {anexos.length > 0 && (
+                <div className="space-y-2">
+                  {anexos.map((a, i) => (
+                    <div
+                      key={i}
+                      className="flex items-center justify-between gap-2 p-3 bg-muted/40 rounded-md border border-border"
+                    >
+                      <div className="flex items-center gap-2 min-w-0 flex-1">
+                        <FileText className="w-4 h-4 text-accent shrink-0" />
+                        <div className="min-w-0 flex-1">
+                          <div className="text-sm font-medium truncate">{a.name}</div>
+                          <div className="text-xs text-muted-foreground">
+                            {(a.size / 1024).toFixed(0)} KB · {a.text.length.toLocaleString("pt-BR")} caracteres extraídos
+                          </div>
+                        </div>
+                      </div>
+                      <Button size="sm" variant="ghost" onClick={() => removerAnexo(i)}>
+                        <X className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
               )}
-            </Button>
-          </div>
+            </TabsContent>
+          </Tabs>
+
+          <Button onClick={submit} disabled={loading || extraindo} className="w-full mt-4" size="lg">
+            {loading ? (
+              <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Gerando peça...</>
+            ) : (
+              <><Sparkles className="w-4 h-4 mr-2" /> Gerar peça {anexos.length > 0 && `com ${anexos.length} anexo(s)`}</>
+            )}
+          </Button>
         </DialogContent>
       </Dialog>
+
 
       <Dialog open={!!viewing} onOpenChange={(o) => !o && setViewing(null)}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
