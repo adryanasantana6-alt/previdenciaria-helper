@@ -172,26 +172,52 @@ function BibliotecaPage() {
       </div>
 
       <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-4">
-        {filtered?.map((d) => (
-          <Card key={d.id} className="p-5 hover:border-accent transition-colors">
-            <div className="flex items-start justify-between gap-3">
-              <div className="flex-1 min-w-0 cursor-pointer" onClick={() => setViewing(d)}>
-                <div className="flex items-center gap-2 mb-2 flex-wrap">
-                  <Badge variant="outline">{d.tipo}</Badge>
-                  {d.materia && <Badge variant="secondary">{d.materia}</Badge>}
+        {filtered?.map((d) => {
+          const nChunks = chunksInfo.data?.get(d.id) ?? 0;
+          const indexado = nChunks > 0;
+          return (
+            <Card key={d.id} className="p-5 hover:border-accent transition-colors">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex-1 min-w-0 cursor-pointer" onClick={() => setViewing(d)}>
+                  <div className="flex items-center gap-2 mb-2 flex-wrap">
+                    <Badge variant="outline">{d.tipo}</Badge>
+                    {d.materia && <Badge variant="secondary">{d.materia}</Badge>}
+                    {indexado ? (
+                      <Badge className="bg-emerald-600 hover:bg-emerald-600 text-white">
+                        <CheckCircle2 className="w-3 h-3 mr-1" /> RAG · {nChunks}
+                      </Badge>
+                    ) : (
+                      <Badge variant="outline" className="text-muted-foreground">Não indexado</Badge>
+                    )}
+                  </div>
+                  <h3 className="font-serif text-lg mb-1">{d.titulo}</h3>
+                  {d.fonte && <p className="text-xs text-muted-foreground">{d.fonte}</p>}
+                  <p className="text-sm text-muted-foreground mt-2 line-clamp-2">
+                    {d.conteudo.slice(0, 200)}
+                  </p>
                 </div>
-                <h3 className="font-serif text-lg mb-1">{d.titulo}</h3>
-                {d.fonte && <p className="text-xs text-muted-foreground">{d.fonte}</p>}
-                <p className="text-sm text-muted-foreground mt-2 line-clamp-2">
-                  {d.conteudo.slice(0, 200)}
-                </p>
+                <div className="flex flex-col gap-1">
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    title={indexado ? "Reindexar" : "Indexar para RAG"}
+                    onClick={() => indexar(d.id)}
+                    disabled={indexingId === d.id}
+                  >
+                    {indexingId === d.id ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Sparkles className="w-4 h-4" />
+                    )}
+                  </Button>
+                  <Button size="icon" variant="ghost" onClick={() => remove(d.id)}>
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
               </div>
-              <Button size="icon" variant="ghost" onClick={() => remove(d.id)}>
-                <Trash2 className="w-4 h-4" />
-              </Button>
-            </div>
-          </Card>
-        ))}
+            </Card>
+          );
+        })}
         {!filtered?.length && (
           <Card className="p-12 text-center col-span-2">
             <BookOpen className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
