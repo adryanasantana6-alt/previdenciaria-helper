@@ -36,9 +36,13 @@ const MATERIAS = [
 
 function BibliotecaPage() {
   const qc = useQueryClient();
+  const indexarFn = useServerFn(indexarDocumento);
+  const indexarPendentesFn = useServerFn(indexarPendentes);
   const [open, setOpen] = useState(false);
   const [viewing, setViewing] = useState<null | { titulo: string; conteudo: string; tipo: string; fonte: string | null }>(null);
   const [busca, setBusca] = useState("");
+  const [indexingId, setIndexingId] = useState<string | null>(null);
+  const [indexingAll, setIndexingAll] = useState(false);
   const [form, setForm] = useState({ titulo: "", tipo: "", materia: "", fonte: "", conteudo: "", data_documento: "" });
 
   const docs = useQuery({
@@ -50,6 +54,17 @@ function BibliotecaPage() {
         .order("updated_at", { ascending: false });
       if (error) throw error;
       return data;
+    },
+  });
+
+  const chunksInfo = useQuery({
+    queryKey: ["chunks-count"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("documento_chunks").select("documento_id");
+      if (error) throw error;
+      const map = new Map<string, number>();
+      for (const r of data ?? []) map.set(r.documento_id, (map.get(r.documento_id) ?? 0) + 1);
+      return map;
     },
   });
 
