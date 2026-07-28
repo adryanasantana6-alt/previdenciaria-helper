@@ -19,6 +19,7 @@ export async function extractPdfText(file: File): Promise<string> {
 }
 
 export async function extractDocxText(file: File): Promise<string> {
+  // @ts-expect-error - no bundled types for the browser entry
   const mammoth = await import("mammoth/mammoth.browser");
   const buf = await file.arrayBuffer();
   const res = await mammoth.extractRawText({ arrayBuffer: buf });

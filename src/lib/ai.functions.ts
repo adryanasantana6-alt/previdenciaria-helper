@@ -278,6 +278,7 @@ export const gerarPeca = createServerFn({ method: "POST" })
     fatos: string;
     pedido: string;
     extras?: string;
+    documentosAnexos?: string;
   }) => data)
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
@@ -286,6 +287,9 @@ export const gerarPeca = createServerFn({ method: "POST" })
 
     const queryRag = `${data.tipo} ${data.materia}\n${data.pedido}\n${data.fatos.slice(0, 500)}`;
     const contexto = await buscarContexto(supabase, queryRag, key);
+
+    // Limita anexos a ~40k caracteres para caber no contexto do modelo.
+    const anexos = (data.documentosAnexos ?? "").slice(0, 40000);
 
     const userPrompt = `Elabore um(a) **${data.tipo}** referente a **${data.materia}**.
 
@@ -297,8 +301,8 @@ ${data.fatos}
 PEDIDO PRINCIPAL:
 ${data.pedido}
 
-${data.extras ? `INFORMAÇÕES ADICIONAIS:\n${data.extras}` : ""}
-
+${data.extras ? `INFORMAÇÕES ADICIONAIS:\n${data.extras}\n` : ""}
+${anexos ? `===== DOCUMENTOS ANEXADOS PELO ADVOGADO (processo administrativo, laudos, CNIS, decisões etc.) =====\n${anexos}\n===== FIM DOS ANEXOS =====\nUtilize os dados desses documentos (datas, DIB, DER, NB, valores, motivos de indeferimento, CNIS) para fundamentar a peça de forma específica.\n` : ""}
 ${contexto ? `===== CONTEXTO DA BIBLIOTECA =====\n${contexto}\n===== FIM DO CONTEXTO =====\n` : ""}
 Gere a peça completa em Markdown, pronta para revisão.`;
 
