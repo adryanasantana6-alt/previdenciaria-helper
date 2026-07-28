@@ -29,6 +29,8 @@ const MATERIAS = [
   "Aposentadoria PCD",
   "Regras de transição EC 103/2019",
   "Auxílio-doença",
+  "Auxílio-acidente",
+
   "Aposentadoria por invalidez",
   "BPC/LOAS",
   "Salário-maternidade",

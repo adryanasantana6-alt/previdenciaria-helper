@@ -39,10 +39,12 @@ const MATERIAS = [
   "Aposentadoria especial",
   "Aposentadoria PCD",
   "Auxílio-doença",
+  "Auxílio-acidente",
   "Aposentadoria por invalidez",
   "BPC/LOAS",
   "Salário-maternidade",
   "Revisão de benefício",
+
 ];
 
 type AnexoDoc = { name: string; size: number; text: string };
