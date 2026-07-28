@@ -1,10 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { BookOpen, Plus, Search, Trash2 } from "lucide-react";
+import { BookOpen, Plus, Search, Trash2, Sparkles, Loader2, CheckCircle2 } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
+import { indexarDocumento, indexarPendentes } from "@/lib/ai.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -34,9 +36,13 @@ const MATERIAS = [
 
 function BibliotecaPage() {
   const qc = useQueryClient();
+  const indexarFn = useServerFn(indexarDocumento);
+  const indexarPendentesFn = useServerFn(indexarPendentes);
   const [open, setOpen] = useState(false);
   const [viewing, setViewing] = useState<null | { titulo: string; conteudo: string; tipo: string; fonte: string | null }>(null);
   const [busca, setBusca] = useState("");
+  const [indexingId, setIndexingId] = useState<string | null>(null);
+  const [indexingAll, setIndexingAll] = useState(false);
   const [form, setForm] = useState({ titulo: "", tipo: "", materia: "", fonte: "", conteudo: "", data_documento: "" });
 
   const docs = useQuery({
@@ -48,6 +54,17 @@ function BibliotecaPage() {
         .order("updated_at", { ascending: false });
       if (error) throw error;
       return data;
+    },
+  });
+
+  const chunksInfo = useQuery({
+    queryKey: ["chunks-count"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("documento_chunks").select("documento_id");
+      if (error) throw error;
+      const map = new Map<string, number>();
+      for (const r of data ?? []) map.set(r.documento_id, (map.get(r.documento_id) ?? 0) + 1);
+      return map;
     },
   });
 
@@ -78,6 +95,33 @@ function BibliotecaPage() {
     const { error } = await supabase.from("documentos").delete().eq("id", id);
     if (error) return toast.error(error.message);
     qc.invalidateQueries({ queryKey: ["documentos"] });
+    qc.invalidateQueries({ queryKey: ["chunks-count"] });
+  };
+
+  const indexar = async (id: string) => {
+    setIndexingId(id);
+    try {
+      const r = await indexarFn({ data: { documentoId: id } });
+      toast.success(`Indexado (${r.chunks} trechos)`);
+      qc.invalidateQueries({ queryKey: ["chunks-count"] });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Falha ao indexar");
+    } finally {
+      setIndexingId(null);
+    }
+  };
+
+  const indexarTodos = async () => {
+    setIndexingAll(true);
+    try {
+      const r = await indexarPendentesFn();
+      toast.success(`${r.processados} documentos indexados (${r.chunks} trechos)`);
+      qc.invalidateQueries({ queryKey: ["chunks-count"] });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Falha ao indexar");
+    } finally {
+      setIndexingAll(false);
+    }
   };
 
   const filtered = docs.data?.filter((d) => {
@@ -100,10 +144,22 @@ function BibliotecaPage() {
             Suas leis, decretos, súmulas e decisões previdenciárias.
           </p>
         </div>
-        <Button onClick={() => setOpen(true)} size="lg">
-          <Plus className="w-4 h-4 mr-2" /> Adicionar documento
-        </Button>
+        <div className="flex gap-2">
+          <Button onClick={indexarTodos} size="lg" variant="outline" disabled={indexingAll}>
+            {indexingAll ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Sparkles className="w-4 h-4 mr-2" />}
+            Indexar pendentes (RAG)
+          </Button>
+          <Button onClick={() => setOpen(true)} size="lg">
+            <Plus className="w-4 h-4 mr-2" /> Adicionar documento
+          </Button>
+        </div>
       </header>
+
+      <div className="max-w-6xl mx-auto mb-4 p-4 rounded-md bg-muted/40 border text-sm text-muted-foreground">
+        <strong className="text-foreground">Fase 2 — RAG ativa.</strong> Documentos indexados são consultados
+        automaticamente pelo Consultor IA e pelo gerador de peças. Clique em <em>Indexar pendentes</em> após adicionar
+        novos documentos.
+      </div>
 
       <div className="max-w-6xl mx-auto mb-6 relative">
         <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
@@ -116,26 +172,52 @@ function BibliotecaPage() {
       </div>
 
       <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-4">
-        {filtered?.map((d) => (
-          <Card key={d.id} className="p-5 hover:border-accent transition-colors">
-            <div className="flex items-start justify-between gap-3">
-              <div className="flex-1 min-w-0 cursor-pointer" onClick={() => setViewing(d)}>
-                <div className="flex items-center gap-2 mb-2 flex-wrap">
-                  <Badge variant="outline">{d.tipo}</Badge>
-                  {d.materia && <Badge variant="secondary">{d.materia}</Badge>}
+        {filtered?.map((d) => {
+          const nChunks = chunksInfo.data?.get(d.id) ?? 0;
+          const indexado = nChunks > 0;
+          return (
+            <Card key={d.id} className="p-5 hover:border-accent transition-colors">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex-1 min-w-0 cursor-pointer" onClick={() => setViewing(d)}>
+                  <div className="flex items-center gap-2 mb-2 flex-wrap">
+                    <Badge variant="outline">{d.tipo}</Badge>
+                    {d.materia && <Badge variant="secondary">{d.materia}</Badge>}
+                    {indexado ? (
+                      <Badge className="bg-emerald-600 hover:bg-emerald-600 text-white">
+                        <CheckCircle2 className="w-3 h-3 mr-1" /> RAG · {nChunks}
+                      </Badge>
+                    ) : (
+                      <Badge variant="outline" className="text-muted-foreground">Não indexado</Badge>
+                    )}
+                  </div>
+                  <h3 className="font-serif text-lg mb-1">{d.titulo}</h3>
+                  {d.fonte && <p className="text-xs text-muted-foreground">{d.fonte}</p>}
+                  <p className="text-sm text-muted-foreground mt-2 line-clamp-2">
+                    {d.conteudo.slice(0, 200)}
+                  </p>
                 </div>
-                <h3 className="font-serif text-lg mb-1">{d.titulo}</h3>
-                {d.fonte && <p className="text-xs text-muted-foreground">{d.fonte}</p>}
-                <p className="text-sm text-muted-foreground mt-2 line-clamp-2">
-                  {d.conteudo.slice(0, 200)}
-                </p>
+                <div className="flex flex-col gap-1">
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    title={indexado ? "Reindexar" : "Indexar para RAG"}
+                    onClick={() => indexar(d.id)}
+                    disabled={indexingId === d.id}
+                  >
+                    {indexingId === d.id ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Sparkles className="w-4 h-4" />
+                    )}
+                  </Button>
+                  <Button size="icon" variant="ghost" onClick={() => remove(d.id)}>
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
               </div>
-              <Button size="icon" variant="ghost" onClick={() => remove(d.id)}>
-                <Trash2 className="w-4 h-4" />
-              </Button>
-            </div>
-          </Card>
-        ))}
+            </Card>
+          );
+        })}
         {!filtered?.length && (
           <Card className="p-12 text-center col-span-2">
             <BookOpen className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
