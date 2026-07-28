@@ -225,11 +225,7 @@ export type Database = {
     }
     Functions: {
       match_chunks: {
-        Args: {
-          _user_id: string
-          match_count?: number
-          query_embedding: string
-        }
+        Args: { match_count?: number; query_embedding: string }
         Returns: {
           chunk_id: string
           conteudo: string
