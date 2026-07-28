@@ -114,7 +114,7 @@ function BibliotecaPage() {
   const indexarTodos = async () => {
     setIndexingAll(true);
     try {
-      const r = await indexarPendentesFn({ data: {} } as never);
+      const r = await indexarPendentesFn();
       toast.success(`${r.processados} documentos indexados (${r.chunks} trechos)`);
       qc.invalidateQueries({ queryKey: ["chunks-count"] });
     } catch (e) {
