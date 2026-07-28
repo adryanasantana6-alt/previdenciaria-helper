@@ -95,6 +95,33 @@ function BibliotecaPage() {
     const { error } = await supabase.from("documentos").delete().eq("id", id);
     if (error) return toast.error(error.message);
     qc.invalidateQueries({ queryKey: ["documentos"] });
+    qc.invalidateQueries({ queryKey: ["chunks-count"] });
+  };
+
+  const indexar = async (id: string) => {
+    setIndexingId(id);
+    try {
+      const r = await indexarFn({ data: { documentoId: id } });
+      toast.success(`Indexado (${r.chunks} trechos)`);
+      qc.invalidateQueries({ queryKey: ["chunks-count"] });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Falha ao indexar");
+    } finally {
+      setIndexingId(null);
+    }
+  };
+
+  const indexarTodos = async () => {
+    setIndexingAll(true);
+    try {
+      const r = await indexarPendentesFn({ data: {} } as never);
+      toast.success(`${r.processados} documentos indexados (${r.chunks} trechos)`);
+      qc.invalidateQueries({ queryKey: ["chunks-count"] });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Falha ao indexar");
+    } finally {
+      setIndexingAll(false);
+    }
   };
 
   const filtered = docs.data?.filter((d) => {
