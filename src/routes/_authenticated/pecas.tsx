@@ -45,12 +45,18 @@ const MATERIAS = [
   "Revisão de benefício",
 ];
 
+type AnexoDoc = { name: string; size: number; text: string };
+
 function PecasPage() {
   const qc = useQueryClient();
   const gerar = useServerFn(gerarPeca);
   const [open, setOpen] = useState(false);
   const [viewing, setViewing] = useState<{ titulo: string; conteudo: string } | null>(null);
   const [loading, setLoading] = useState(false);
+  const [tab, setTab] = useState("dados");
+  const [anexos, setAnexos] = useState<AnexoDoc[]>([]);
+  const [extraindo, setExtraindo] = useState(false);
+  const fileRef = useRef<HTMLInputElement | null>(null);
 
   const [form, setForm] = useState({
     tipo: "",
@@ -73,24 +79,65 @@ function PecasPage() {
     },
   });
 
+  const resetForm = () => {
+    setForm({ tipo: "", materia: "", cliente: "", fatos: "", pedido: "", extras: "" });
+    setAnexos([]);
+    setTab("dados");
+  };
+
+  const handleFiles = async (files: FileList | null) => {
+    if (!files?.length) return;
+    setExtraindo(true);
+    try {
+      for (const file of Array.from(files)) {
+        if (file.size > 25 * 1024 * 1024) {
+          toast.error(`${file.name}: excede 25MB.`);
+          continue;
+        }
+        try {
+          const text = await extractFileText(file);
+          if (!text.trim()) {
+            toast.warning(`${file.name}: nenhum texto extraído (PDF pode ser digitalizado sem OCR).`);
+            continue;
+          }
+          setAnexos((prev) => [...prev, { name: file.name, size: file.size, text }]);
+          toast.success(`${file.name} anexado (${text.length.toLocaleString("pt-BR")} caracteres).`);
+        } catch (e) {
+          toast.error(e instanceof Error ? e.message : `Erro ao ler ${file.name}`);
+        }
+      }
+    } finally {
+      setExtraindo(false);
+      if (fileRef.current) fileRef.current.value = "";
+    }
+  };
+
+  const removerAnexo = (i: number) => setAnexos((prev) => prev.filter((_, idx) => idx !== i));
+
   const submit = async () => {
     if (!form.tipo || !form.materia || !form.cliente || !form.fatos || !form.pedido) {
+      setTab("dados");
       return toast.error("Preencha todos os campos obrigatórios.");
     }
     setLoading(true);
     try {
-      const res = await gerar({ data: form });
+      const documentosAnexos = anexos
+        .map((a) => `--- ARQUIVO: ${a.name} ---\n${a.text}`)
+        .join("\n\n");
+      const res = await gerar({ data: { ...form, documentosAnexos } });
       toast.success("Peça gerada com sucesso!");
       qc.invalidateQueries({ queryKey: ["pecas"] });
       setOpen(false);
-      setForm({ tipo: "", materia: "", cliente: "", fatos: "", pedido: "", extras: "" });
-      setViewing({ titulo: `${form.tipo} — ${form.cliente}`, conteudo: res.conteudo });
+      const titulo = `${form.tipo} — ${form.cliente}`;
+      resetForm();
+      setViewing({ titulo, conteudo: res.conteudo });
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Erro ao gerar peça");
     } finally {
       setLoading(false);
     }
   };
+
 
   const download = (titulo: string, conteudo: string) => {
     const blob = new Blob([conteudo], { type: "text/markdown;charset=utf-8" });
