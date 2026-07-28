@@ -41,6 +41,44 @@ export type Database = {
         }
         Relationships: []
       }
+      documento_chunks: {
+        Row: {
+          conteudo: string
+          created_at: string
+          documento_id: string
+          embedding: string
+          id: string
+          ordem: number
+          user_id: string
+        }
+        Insert: {
+          conteudo: string
+          created_at?: string
+          documento_id: string
+          embedding: string
+          id?: string
+          ordem?: number
+          user_id: string
+        }
+        Update: {
+          conteudo?: string
+          created_at?: string
+          documento_id?: string
+          embedding?: string
+          id?: string
+          ordem?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "documento_chunks_documento_id_fkey"
+            columns: ["documento_id"]
+            isOneToOne: false
+            referencedRelation: "documentos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       documentos: {
         Row: {
           arquivo_url: string | null
@@ -186,7 +224,23 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      match_chunks: {
+        Args: {
+          _user_id: string
+          match_count?: number
+          query_embedding: string
+        }
+        Returns: {
+          chunk_id: string
+          conteudo: string
+          documento_id: string
+          fonte: string
+          materia: string
+          similarity: number
+          tipo: string
+          titulo: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
