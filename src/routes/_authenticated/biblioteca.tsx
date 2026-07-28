@@ -144,10 +144,22 @@ function BibliotecaPage() {
             Suas leis, decretos, súmulas e decisões previdenciárias.
           </p>
         </div>
-        <Button onClick={() => setOpen(true)} size="lg">
-          <Plus className="w-4 h-4 mr-2" /> Adicionar documento
-        </Button>
+        <div className="flex gap-2">
+          <Button onClick={indexarTodos} size="lg" variant="outline" disabled={indexingAll}>
+            {indexingAll ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Sparkles className="w-4 h-4 mr-2" />}
+            Indexar pendentes (RAG)
+          </Button>
+          <Button onClick={() => setOpen(true)} size="lg">
+            <Plus className="w-4 h-4 mr-2" /> Adicionar documento
+          </Button>
+        </div>
       </header>
+
+      <div className="max-w-6xl mx-auto mb-4 p-4 rounded-md bg-muted/40 border text-sm text-muted-foreground">
+        <strong className="text-foreground">Fase 2 — RAG ativa.</strong> Documentos indexados são consultados
+        automaticamente pelo Consultor IA e pelo gerador de peças. Clique em <em>Indexar pendentes</em> após adicionar
+        novos documentos.
+      </div>
 
       <div className="max-w-6xl mx-auto mb-6 relative">
         <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
