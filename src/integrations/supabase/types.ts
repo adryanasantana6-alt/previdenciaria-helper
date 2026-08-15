@@ -14,6 +14,173 @@ export type Database = {
   }
   public: {
     Tables: {
+      casos: {
+        Row: {
+          cliente_id: string
+          created_at: string
+          der: string | null
+          fase: string
+          honorarios: number | null
+          id: string
+          materia: string | null
+          numero_beneficio: string | null
+          numero_processo: string | null
+          observacoes: string | null
+          status: string
+          tipo_beneficio: string | null
+          titulo: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cliente_id: string
+          created_at?: string
+          der?: string | null
+          fase?: string
+          honorarios?: number | null
+          id?: string
+          materia?: string | null
+          numero_beneficio?: string | null
+          numero_processo?: string | null
+          observacoes?: string | null
+          status?: string
+          tipo_beneficio?: string | null
+          titulo: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cliente_id?: string
+          created_at?: string
+          der?: string | null
+          fase?: string
+          honorarios?: number | null
+          id?: string
+          materia?: string | null
+          numero_beneficio?: string | null
+          numero_processo?: string | null
+          observacoes?: string | null
+          status?: string
+          tipo_beneficio?: string | null
+          titulo?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "casos_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cliente_documentos: {
+        Row: {
+          arquivo_url: string | null
+          caso_id: string | null
+          categoria: string | null
+          cliente_id: string
+          conteudo: string
+          created_at: string
+          id: string
+          nome: string
+          user_id: string
+        }
+        Insert: {
+          arquivo_url?: string | null
+          caso_id?: string | null
+          categoria?: string | null
+          cliente_id: string
+          conteudo?: string
+          created_at?: string
+          id?: string
+          nome: string
+          user_id: string
+        }
+        Update: {
+          arquivo_url?: string | null
+          caso_id?: string | null
+          categoria?: string | null
+          cliente_id?: string
+          conteudo?: string
+          created_at?: string
+          id?: string
+          nome?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cliente_documentos_caso_id_fkey"
+            columns: ["caso_id"]
+            isOneToOne: false
+            referencedRelation: "casos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cliente_documentos_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      clientes: {
+        Row: {
+          cpf: string | null
+          created_at: string
+          data_nascimento: string | null
+          email: string | null
+          endereco: string | null
+          estado_civil: string | null
+          id: string
+          nit: string | null
+          nome: string
+          observacoes: string | null
+          profissao: string | null
+          rg: string | null
+          telefone: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cpf?: string | null
+          created_at?: string
+          data_nascimento?: string | null
+          email?: string | null
+          endereco?: string | null
+          estado_civil?: string | null
+          id?: string
+          nit?: string | null
+          nome: string
+          observacoes?: string | null
+          profissao?: string | null
+          rg?: string | null
+          telefone?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cpf?: string | null
+          created_at?: string
+          data_nascimento?: string | null
+          email?: string | null
+          endereco?: string | null
+          estado_civil?: string | null
+          id?: string
+          nit?: string | null
+          nome?: string
+          observacoes?: string | null
+          profissao?: string | null
+          rg?: string | null
+          telefone?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       conversas: {
         Row: {
           created_at: string
@@ -121,6 +288,62 @@ export type Database = {
         }
         Relationships: []
       }
+      guias_previdenciarias: {
+        Row: {
+          cliente_id: string
+          codigo: string | null
+          competencia: string
+          comprovante_url: string | null
+          created_at: string
+          data_pagamento: string | null
+          id: string
+          observacoes: string | null
+          situacao: string
+          updated_at: string
+          user_id: string
+          valor: number
+          vencimento: string | null
+        }
+        Insert: {
+          cliente_id: string
+          codigo?: string | null
+          competencia: string
+          comprovante_url?: string | null
+          created_at?: string
+          data_pagamento?: string | null
+          id?: string
+          observacoes?: string | null
+          situacao?: string
+          updated_at?: string
+          user_id: string
+          valor?: number
+          vencimento?: string | null
+        }
+        Update: {
+          cliente_id?: string
+          codigo?: string | null
+          competencia?: string
+          comprovante_url?: string | null
+          created_at?: string
+          data_pagamento?: string | null
+          id?: string
+          observacoes?: string | null
+          situacao?: string
+          updated_at?: string
+          user_id?: string
+          valor?: number
+          vencimento?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guias_previdenciarias_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       mensagens: {
         Row: {
           content: string
@@ -152,6 +375,69 @@ export type Database = {
             columns: ["conversa_id"]
             isOneToOne: false
             referencedRelation: "conversas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pagamentos: {
+        Row: {
+          caso_id: string | null
+          cliente_id: string
+          created_at: string
+          data_pagamento: string | null
+          descricao: string
+          forma: string | null
+          id: string
+          observacoes: string | null
+          situacao: string
+          updated_at: string
+          user_id: string
+          valor: number
+          vencimento: string | null
+        }
+        Insert: {
+          caso_id?: string | null
+          cliente_id: string
+          created_at?: string
+          data_pagamento?: string | null
+          descricao: string
+          forma?: string | null
+          id?: string
+          observacoes?: string | null
+          situacao?: string
+          updated_at?: string
+          user_id: string
+          valor?: number
+          vencimento?: string | null
+        }
+        Update: {
+          caso_id?: string | null
+          cliente_id?: string
+          created_at?: string
+          data_pagamento?: string | null
+          descricao?: string
+          forma?: string | null
+          id?: string
+          observacoes?: string | null
+          situacao?: string
+          updated_at?: string
+          user_id?: string
+          valor?: number
+          vencimento?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pagamentos_caso_id_fkey"
+            columns: ["caso_id"]
+            isOneToOne: false
+            referencedRelation: "casos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pagamentos_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
             referencedColumns: ["id"]
           },
         ]
