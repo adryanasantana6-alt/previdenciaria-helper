@@ -26,6 +26,9 @@ export type Database = {
           numero_beneficio: string | null
           numero_processo: string | null
           observacoes: string | null
+          prazo_data: string | null
+          prazo_obs: string | null
+          prazo_tipo: string | null
           status: string
           tipo_beneficio: string | null
           titulo: string
@@ -43,6 +46,9 @@ export type Database = {
           numero_beneficio?: string | null
           numero_processo?: string | null
           observacoes?: string | null
+          prazo_data?: string | null
+          prazo_obs?: string | null
+          prazo_tipo?: string | null
           status?: string
           tipo_beneficio?: string | null
           titulo: string
@@ -60,6 +66,9 @@ export type Database = {
           numero_beneficio?: string | null
           numero_processo?: string | null
           observacoes?: string | null
+          prazo_data?: string | null
+          prazo_obs?: string | null
+          prazo_tipo?: string | null
           status?: string
           tipo_beneficio?: string | null
           titulo?: string
