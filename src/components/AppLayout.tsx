@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
-import { LayoutDashboard, MessageSquare, FileText, BookOpen, LogOut, Scale } from "lucide-react";
+import { LayoutDashboard, MessageSquare, FileText, BookOpen, Users, LogOut, Scale } from "lucide-react";
 import type { ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
