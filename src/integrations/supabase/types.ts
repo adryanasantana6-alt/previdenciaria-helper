@@ -87,6 +87,7 @@ export type Database = {
       }
       cliente_documentos: {
         Row: {
+          arquivo_nome: string | null
           arquivo_url: string | null
           caso_id: string | null
           categoria: string | null
@@ -94,10 +95,14 @@ export type Database = {
           conteudo: string
           created_at: string
           id: string
+          mime: string | null
           nome: string
+          pasta: string | null
+          tamanho: number | null
           user_id: string
         }
         Insert: {
+          arquivo_nome?: string | null
           arquivo_url?: string | null
           caso_id?: string | null
           categoria?: string | null
@@ -105,10 +110,14 @@ export type Database = {
           conteudo?: string
           created_at?: string
           id?: string
+          mime?: string | null
           nome: string
+          pasta?: string | null
+          tamanho?: number | null
           user_id: string
         }
         Update: {
+          arquivo_nome?: string | null
           arquivo_url?: string | null
           caso_id?: string | null
           categoria?: string | null
@@ -116,7 +125,10 @@ export type Database = {
           conteudo?: string
           created_at?: string
           id?: string
+          mime?: string | null
           nome?: string
+          pasta?: string | null
+          tamanho?: number | null
           user_id?: string
         }
         Relationships: [
@@ -144,6 +156,8 @@ export type Database = {
           email: string | null
           endereco: string | null
           estado_civil: string | null
+          govbr_senha: string | null
+          govbr_usuario: string | null
           id: string
           nit: string | null
           nome: string
@@ -161,6 +175,8 @@ export type Database = {
           email?: string | null
           endereco?: string | null
           estado_civil?: string | null
+          govbr_senha?: string | null
+          govbr_usuario?: string | null
           id?: string
           nit?: string | null
           nome: string
@@ -178,6 +194,8 @@ export type Database = {
           email?: string | null
           endereco?: string | null
           estado_civil?: string | null
+          govbr_senha?: string | null
+          govbr_usuario?: string | null
           id?: string
           nit?: string | null
           nome?: string
