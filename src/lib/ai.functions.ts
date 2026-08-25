@@ -350,3 +350,70 @@ Gere a peça completa em Markdown, pronta para revisão.`;
     if (error) throw new Error(error.message);
     return { id: peca.id, conteudo };
   });
+
+/* ------------- Extração automática de dados cadastrais do segurado ------------- */
+
+const CADASTRO_PROMPT = `Você extrai dados cadastrais de documentos brasileiros (RG, CNH, CPF, CTPS, comprovante de residência, cartão do Gov.br, CNIS).
+Retorne APENAS um objeto JSON válido, sem markdown, com as chaves:
+{"nome":"","cpf":"","rg":"","nit":"","data_nascimento":"","telefone":"","email":"","endereco":"","estado_civil":"","profissao":""}
+Regras:
+- data_nascimento no formato AAAA-MM-DD.
+- cpf e nit apenas com a formatação usual (000.000.000-00).
+- endereco completo: logradouro, número, complemento, bairro, cidade/UF e CEP (use o comprovante de residência).
+- Deixe "" quando o dado não aparecer nos documentos. NUNCA invente dados.`;
+
+export const extrairDadosCliente = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator(
+    (data: {
+      imagens?: { nome: string; dataUrl: string }[];
+      textos?: string;
+    }) => data,
+  )
+  .handler(async ({ data }) => {
+    const key = process.env.LOVABLE_API_KEY;
+    if (!key) throw new Error("LOVABLE_API_KEY ausente");
+
+    const content: any[] = [
+      {
+        type: "text",
+        text:
+          "Extraia os dados cadastrais do segurado a partir dos documentos a seguir." +
+          (data.textos ? `\n\nTEXTO EXTRAÍDO DOS ARQUIVOS:\n${data.textos.slice(0, 30000)}` : ""),
+      },
+      ...(data.imagens ?? []).slice(0, 6).map((img) => ({
+        type: "image_url",
+        image_url: { url: img.dataUrl },
+      })),
+    ];
+
+    const resp = await fetch(GATEWAY, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
+      body: JSON.stringify({
+        model: MODEL,
+        messages: [
+          { role: "system", content: CADASTRO_PROMPT },
+          { role: "user", content },
+        ],
+      }),
+    });
+
+    if (!resp.ok) {
+      const body = await resp.text();
+      if (resp.status === 429) throw new Error("Muitas requisições. Tente novamente em instantes.");
+      if (resp.status === 402) throw new Error("Créditos de IA esgotados.");
+      throw new Error(`Erro IA (${resp.status}): ${body.slice(0, 200)}`);
+    }
+
+    const json = (await resp.json()) as { choices: { message: { content: string } }[] };
+    const raw = json.choices[0]?.message.content ?? "{}";
+    const match = raw.match(/\{[\s\S]*\}/);
+    let parsed: Record<string, string> = {};
+    try {
+      parsed = JSON.parse(match ? match[0] : raw);
+    } catch {
+      throw new Error("Não foi possível interpretar os dados extraídos. Tente outro arquivo.");
+    }
+    return parsed;
+  });
