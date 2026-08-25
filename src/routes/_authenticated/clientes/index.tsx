@@ -190,31 +190,157 @@ function ClientesPage() {
             <DialogHeader>
               <DialogTitle className="font-serif text-2xl">Novo segurado</DialogTitle>
             </DialogHeader>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="md:col-span-2">{field("nome", "Nome completo")}</div>
-              {field("cpf", "CPF")}
-              {field("rg", "RG")}
-              {field("nit", "NIT / PIS")}
-              {field("data_nascimento", "Data de nascimento", "date")}
-              {field("telefone", "Telefone")}
-              {field("email", "E-mail", "email")}
-              {field("estado_civil", "Estado civil")}
-              {field("profissao", "Profissão")}
-              <div className="md:col-span-2">{field("endereco", "Endereço")}</div>
-              <div className="md:col-span-2 space-y-1.5">
-                <Label htmlFor="obs">Observações</Label>
-                <Textarea
-                  id="obs"
-                  rows={3}
-                  value={form.observacoes}
-                  onChange={(e) => setForm((f) => ({ ...f, observacoes: e.target.value }))}
-                />
-              </div>
-            </div>
+            <Tabs value={abaCadastro} onValueChange={setAbaCadastro}>
+              <TabsList className="grid grid-cols-2 w-full">
+                <TabsTrigger value="documentos">
+                  <Upload className="w-4 h-4 mr-2" /> Documentos
+                  {anexos.length > 0 && <span className="ml-1 text-xs opacity-70">({anexos.length})</span>}
+                </TabsTrigger>
+                <TabsTrigger value="dados">Dados do segurado</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="documentos" className="pt-4 space-y-4">
+                <p className="text-xs text-muted-foreground">
+                  Anexe identificação com foto (RG/CNH), comprovante de residência, cartão do CPF,
+                  CTPS, CNIS ou print do Gov.br. A IA lê os arquivos e preenche o cadastro
+                  automaticamente — você pode editar tudo depois. Formatos: <strong>JPG, PNG, PDF,
+                  DOCX, TXT</strong>.
+                </p>
+
+                <div
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    addFiles(e.dataTransfer.files);
+                  }}
+                  onClick={() => fileRef.current?.click()}
+                  className="border-2 border-dashed border-border rounded-md p-6 text-center hover:border-accent transition-colors cursor-pointer"
+                >
+                  <Upload className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
+                  <p className="text-sm">Clique ou arraste os documentos aqui</p>
+                  <input
+                    ref={fileRef}
+                    type="file"
+                    multiple
+                    accept="image/*,.pdf,.docx,.txt,.md"
+                    className="hidden"
+                    onChange={(e) => addFiles(e.target.files)}
+                  />
+                </div>
+
+                {anexos.map((a, i) => (
+                  <div
+                    key={i}
+                    className="flex items-center gap-2 p-3 rounded-md border border-border bg-muted/40"
+                  >
+                    <FileText className="w-4 h-4 text-accent shrink-0" />
+                    <div className="min-w-0 flex-1">
+                      <div className="text-sm truncate">{a.file.name}</div>
+                      <div className="text-xs text-muted-foreground">{tamanhoLegivel(a.file.size)}</div>
+                    </div>
+                    <Select
+                      value={a.pasta}
+                      onValueChange={(v) =>
+                        setAnexos((prev) => prev.map((x, idx) => (idx === i ? { ...x, pasta: v } : x)))
+                      }
+                    >
+                      <SelectTrigger className="w-[190px]">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {PASTAS.map((p) => (
+                          <SelectItem key={p} value={p}>
+                            {p}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setAnexos((prev) => prev.filter((_, idx) => idx !== i))}
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
+                ))}
+
+                <Button
+                  variant="secondary"
+                  className="w-full"
+                  disabled={!anexos.length || lendo}
+                  onClick={preencherComIA}
+                >
+                  {lendo ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Lendo documentos…
+                    </>
+                  ) : (
+                    <>
+                      <Wand2 className="w-4 h-4 mr-2" /> Preencher cadastro com IA
+                    </>
+                  )}
+                </Button>
+              </TabsContent>
+
+              <TabsContent value="dados" className="pt-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="md:col-span-2">{field("nome", "Nome completo")}</div>
+                  {field("cpf", "CPF")}
+                  {field("rg", "RG")}
+                  {field("nit", "NIT / PIS")}
+                  {field("data_nascimento", "Data de nascimento", "date")}
+                  {field("telefone", "Telefone")}
+                  {field("email", "E-mail", "email")}
+                  {field("estado_civil", "Estado civil")}
+                  {field("profissao", "Profissão")}
+                  <div className="md:col-span-2">{field("endereco", "Endereço")}</div>
+
+                  <div className="md:col-span-2 border-t border-border pt-4">
+                    <h4 className="font-serif text-lg">Acesso Gov.br / Meu INSS</h4>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Guardado de forma privada, visível apenas na sua conta. Use somente com
+                      autorização expressa do segurado (Termo de Acesso ao Meu INSS).
+                    </p>
+                  </div>
+                  {field("govbr_usuario", "Usuário Gov.br (CPF)")}
+                  <div className="space-y-1.5">
+                    <Label htmlFor="govbr_senha">Senha Gov.br</Label>
+                    <div className="relative">
+                      <Input
+                        id="govbr_senha"
+                        type={verSenha ? "text" : "password"}
+                        autoComplete="new-password"
+                        value={form.govbr_senha}
+                        onChange={(e) => setForm((f) => ({ ...f, govbr_senha: e.target.value }))}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setVerSenha((v) => !v)}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground"
+                      >
+                        {verSenha ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="md:col-span-2 space-y-1.5">
+                    <Label htmlFor="obs">Observações</Label>
+                    <Textarea
+                      id="obs"
+                      rows={3}
+                      value={form.observacoes}
+                      onChange={(e) => setForm((f) => ({ ...f, observacoes: e.target.value }))}
+                    />
+                  </div>
+                </div>
+              </TabsContent>
+            </Tabs>
+
             <DialogFooter>
               <Button onClick={() => criar.mutate()} disabled={!form.nome.trim() || criar.isPending}>
                 {criar.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                Salvar segurado
+                Salvar segurado {anexos.length > 0 && `+ ${anexos.length} arquivo(s)`}
               </Button>
             </DialogFooter>
           </DialogContent>
