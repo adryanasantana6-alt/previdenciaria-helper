@@ -1,7 +1,24 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, Search, Users, Loader2, KanbanSquare, AlarmClock, Sparkles, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  Plus,
+  Search,
+  Users,
+  Loader2,
+  KanbanSquare,
+  AlarmClock,
+  Sparkles,
+  ChevronLeft,
+  ChevronRight,
+  Upload,
+  X,
+  FileText,
+  Wand2,
+  Eye,
+  EyeOff,
+} from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
@@ -12,6 +29,13 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -19,6 +43,15 @@ import {
   DialogTrigger,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { extrairDadosCliente } from "@/lib/ai.functions";
+import {
+  PASTAS,
+  ehImagem,
+  fileToDataUrl,
+  textoSeguro,
+  uploadArquivoCliente,
+  tamanhoLegivel,
+} from "@/lib/cliente-arquivos";
 import { FASES, faseLabel, dataBR, brl, diasRestantes, prazoStatus, prazoTipoLabel } from "@/lib/crm";
 
 export const Route = createFileRoute("/_authenticated/clientes/")({
