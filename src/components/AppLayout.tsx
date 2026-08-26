@@ -20,6 +20,7 @@ const nav = [
   { to: "/pecas", label: "Peças & Recursos", icon: FileText },
   { to: "/biblioteca", label: "Biblioteca", icon: BookOpen },
   { to: "/clientes", label: "Clientes", icon: Users },
+  { to: "/publicacoes", label: "Publicações DJEN", icon: Newspaper },
 ] as const;
 
 export function AppLayout({ children }: { children: ReactNode }) {
