@@ -235,6 +235,39 @@ export type Database = {
         }
         Relationships: []
       }
+      djen_config: {
+        Row: {
+          auto_sync: boolean
+          created_at: string
+          dias_retroativos: number
+          numero_oab: string | null
+          uf_oab: string | null
+          ultima_sincronizacao: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          auto_sync?: boolean
+          created_at?: string
+          dias_retroativos?: number
+          numero_oab?: string | null
+          uf_oab?: string | null
+          ultima_sincronizacao?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          auto_sync?: boolean
+          created_at?: string
+          dias_retroativos?: number
+          numero_oab?: string | null
+          uf_oab?: string | null
+          ultima_sincronizacao?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       documento_chunks: {
         Row: {
           conteudo: string
@@ -364,6 +397,87 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "guias_previdenciarias_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      intimacoes: {
+        Row: {
+          advogados: string | null
+          caso_id: string | null
+          cliente_id: string | null
+          created_at: string
+          data_disponibilizacao: string | null
+          djen_id: string
+          fase: string
+          id: string
+          link: string | null
+          numero_processo: string | null
+          observacoes: string | null
+          orgao: string | null
+          prazo_data: string | null
+          responsavel: string | null
+          texto: string
+          tipo_comunicacao: string | null
+          tribunal: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          advogados?: string | null
+          caso_id?: string | null
+          cliente_id?: string | null
+          created_at?: string
+          data_disponibilizacao?: string | null
+          djen_id: string
+          fase?: string
+          id?: string
+          link?: string | null
+          numero_processo?: string | null
+          observacoes?: string | null
+          orgao?: string | null
+          prazo_data?: string | null
+          responsavel?: string | null
+          texto?: string
+          tipo_comunicacao?: string | null
+          tribunal?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          advogados?: string | null
+          caso_id?: string | null
+          cliente_id?: string | null
+          created_at?: string
+          data_disponibilizacao?: string | null
+          djen_id?: string
+          fase?: string
+          id?: string
+          link?: string | null
+          numero_processo?: string | null
+          observacoes?: string | null
+          orgao?: string | null
+          prazo_data?: string | null
+          responsavel?: string | null
+          texto?: string
+          tipo_comunicacao?: string | null
+          tribunal?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "intimacoes_caso_id_fkey"
+            columns: ["caso_id"]
+            isOneToOne: false
+            referencedRelation: "casos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "intimacoes_cliente_id_fkey"
             columns: ["cliente_id"]
             isOneToOne: false
             referencedRelation: "clientes"
