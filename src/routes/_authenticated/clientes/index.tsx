@@ -186,12 +186,30 @@ function ClientesPage() {
       const { data: auth } = await supabase.auth.getUser();
       if (!auth.user) throw new Error("Sessão expirada");
       const payload = { ...form, data_nascimento: form.data_nascimento || null, user_id: auth.user.id };
-      const { error } = await supabase.from("clientes").insert(payload);
+      const { data: novo, error } = await supabase
+        .from("clientes")
+        .insert(payload)
+        .select("id")
+        .single();
       if (error) throw error;
+      for (const a of anexos) {
+        try {
+          await uploadArquivoCliente({
+            userId: auth.user.id,
+            clienteId: novo.id,
+            file: a.file,
+            pasta: a.pasta,
+          });
+        } catch (e) {
+          toast.error((e as Error).message);
+        }
+      }
     },
     onSuccess: () => {
       toast.success("Segurado cadastrado.");
       setForm(emptyForm);
+      setAnexos([]);
+      setAbaCadastro("documentos");
       setOpen(false);
       qc.invalidateQueries({ queryKey: ["clientes"] });
     },
