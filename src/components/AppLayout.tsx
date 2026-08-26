@@ -1,5 +1,14 @@
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
-import { LayoutDashboard, MessageSquare, FileText, BookOpen, Users, LogOut, Scale } from "lucide-react";
+import {
+  LayoutDashboard,
+  MessageSquare,
+  FileText,
+  BookOpen,
+  Users,
+  Newspaper,
+  LogOut,
+  Scale,
+} from "lucide-react";
 import type { ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -11,6 +20,7 @@ const nav = [
   { to: "/pecas", label: "Peças & Recursos", icon: FileText },
   { to: "/biblioteca", label: "Biblioteca", icon: BookOpen },
   { to: "/clientes", label: "Clientes", icon: Users },
+  { to: "/publicacoes", label: "Publicações DJEN", icon: Newspaper },
 ] as const;
 
 export function AppLayout({ children }: { children: ReactNode }) {
