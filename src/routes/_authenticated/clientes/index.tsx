@@ -109,6 +109,51 @@ function ClientesPage() {
   const [busca, setBusca] = useState("");
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState(emptyForm);
+  const [abaCadastro, setAbaCadastro] = useState("documentos");
+  const [anexos, setAnexos] = useState<Anexo[]>([]);
+  const [lendo, setLendo] = useState(false);
+  const [verSenha, setVerSenha] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+  const extrair = useServerFn(extrairDadosCliente);
+
+  const addFiles = (fl: FileList | null) => {
+    if (!fl?.length) return;
+    setAnexos((prev) => [...prev, ...Array.from(fl).map((file) => ({ file, pasta: "Outros" }))]);
+  };
+
+  const preencherComIA = async () => {
+    setLendo(true);
+    try {
+      const imagens: { nome: string; dataUrl: string }[] = [];
+      const textos: string[] = [];
+      for (const a of anexos) {
+        if (ehImagem(a.file)) {
+          imagens.push({ nome: a.file.name, dataUrl: await fileToDataUrl(a.file) });
+        } else {
+          const t = await textoSeguro(a.file);
+          if (t) textos.push(`### ${a.file.name}\n${t}`);
+        }
+      }
+      const dados = (await extrair({
+        data: { imagens, textos: textos.join("\n\n") },
+      })) as Record<string, string>;
+      setForm((f) => {
+        const next = { ...f };
+        for (const k of Object.keys(emptyForm) as (keyof typeof emptyForm)[]) {
+          const v = dados[k];
+          if (v && !next[k]) next[k] = v;
+        }
+        return next;
+      });
+      setAbaCadastro("dados");
+      toast.success("Cadastro preenchido pela IA. Revise os dados.");
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setLendo(false);
+    }
+  };
+
 
   const clientes = useQuery({
     queryKey: ["clientes"],
