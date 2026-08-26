@@ -80,7 +80,11 @@ const emptyForm = {
   estado_civil: "",
   profissao: "",
   observacoes: "",
+  govbr_usuario: "",
+  govbr_senha: "",
 };
+
+type Anexo = { file: File; pasta: string };
 
 type CasoRow = {
   id: string;
