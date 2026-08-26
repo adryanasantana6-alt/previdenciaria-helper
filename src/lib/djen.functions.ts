@@ -1,9 +1,9 @@
 import { createServerFn } from "@tanstack/react-start";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { buildDjenUrl, type DjenFiltro, type DjenResposta } from "@/lib/djen";
 
+// Consulta pública ao DJEN (dados oficiais abertos do CNJ) — sem exigir sessão,
+// evitando falha quando o token ainda não foi anexado à chamada.
 export const buscarPublicacoes = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
   .inputValidator((input: DjenFiltro) => input)
   .handler(async ({ data }): Promise<DjenResposta & { erro?: string }> => {
     try {
