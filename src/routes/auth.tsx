@@ -12,6 +12,8 @@ import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export const Route = createFileRoute("/auth")({
+  // A sessão do Supabase vive no navegador; renderizar no servidor causa divergência de hidratação.
+  ssr: false,
   head: () => ({
     meta: [
       { title: "Entrar — Assistente Previdenciário" },
