@@ -14,6 +14,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedPublicacoesRouteImport } from './routes/_authenticated/publicacoes'
 import { Route as AuthenticatedPecasRouteImport } from './routes/_authenticated/pecas'
+import { Route as AuthenticatedIntimacoesRouteImport } from './routes/_authenticated/intimacoes'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedChatRouteImport } from './routes/_authenticated/chat'
 import { Route as AuthenticatedBibliotecaRouteImport } from './routes/_authenticated/biblioteca'
@@ -43,6 +44,11 @@ const AuthenticatedPublicacoesRoute =
 const AuthenticatedPecasRoute = AuthenticatedPecasRouteImport.update({
   id: '/pecas',
   path: '/pecas',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedIntimacoesRoute = AuthenticatedIntimacoesRouteImport.update({
+  id: '/intimacoes',
+  path: '/intimacoes',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
@@ -79,6 +85,7 @@ export interface FileRoutesByFullPath {
   '/biblioteca': typeof AuthenticatedBibliotecaRoute
   '/chat': typeof AuthenticatedChatRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/intimacoes': typeof AuthenticatedIntimacoesRoute
   '/pecas': typeof AuthenticatedPecasRoute
   '/publicacoes': typeof AuthenticatedPublicacoesRoute
   '/clientes/$clienteId': typeof AuthenticatedClientesClienteIdRoute
@@ -90,6 +97,7 @@ export interface FileRoutesByTo {
   '/biblioteca': typeof AuthenticatedBibliotecaRoute
   '/chat': typeof AuthenticatedChatRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/intimacoes': typeof AuthenticatedIntimacoesRoute
   '/pecas': typeof AuthenticatedPecasRoute
   '/publicacoes': typeof AuthenticatedPublicacoesRoute
   '/clientes/$clienteId': typeof AuthenticatedClientesClienteIdRoute
@@ -103,6 +111,7 @@ export interface FileRoutesById {
   '/_authenticated/biblioteca': typeof AuthenticatedBibliotecaRoute
   '/_authenticated/chat': typeof AuthenticatedChatRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/intimacoes': typeof AuthenticatedIntimacoesRoute
   '/_authenticated/pecas': typeof AuthenticatedPecasRoute
   '/_authenticated/publicacoes': typeof AuthenticatedPublicacoesRoute
   '/_authenticated/clientes/$clienteId': typeof AuthenticatedClientesClienteIdRoute
@@ -116,6 +125,7 @@ export interface FileRouteTypes {
     | '/biblioteca'
     | '/chat'
     | '/dashboard'
+    | '/intimacoes'
     | '/pecas'
     | '/publicacoes'
     | '/clientes/$clienteId'
@@ -127,6 +137,7 @@ export interface FileRouteTypes {
     | '/biblioteca'
     | '/chat'
     | '/dashboard'
+    | '/intimacoes'
     | '/pecas'
     | '/publicacoes'
     | '/clientes/$clienteId'
@@ -139,6 +150,7 @@ export interface FileRouteTypes {
     | '/_authenticated/biblioteca'
     | '/_authenticated/chat'
     | '/_authenticated/dashboard'
+    | '/_authenticated/intimacoes'
     | '/_authenticated/pecas'
     | '/_authenticated/publicacoes'
     | '/_authenticated/clientes/$clienteId'
@@ -188,6 +200,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPecasRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/intimacoes': {
+      id: '/_authenticated/intimacoes'
+      path: '/intimacoes'
+      fullPath: '/intimacoes'
+      preLoaderRoute: typeof AuthenticatedIntimacoesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
       path: '/dashboard'
@@ -230,6 +249,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedBibliotecaRoute: typeof AuthenticatedBibliotecaRoute
   AuthenticatedChatRoute: typeof AuthenticatedChatRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedIntimacoesRoute: typeof AuthenticatedIntimacoesRoute
   AuthenticatedPecasRoute: typeof AuthenticatedPecasRoute
   AuthenticatedPublicacoesRoute: typeof AuthenticatedPublicacoesRoute
   AuthenticatedClientesClienteIdRoute: typeof AuthenticatedClientesClienteIdRoute
@@ -240,6 +260,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedBibliotecaRoute: AuthenticatedBibliotecaRoute,
   AuthenticatedChatRoute: AuthenticatedChatRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedIntimacoesRoute: AuthenticatedIntimacoesRoute,
   AuthenticatedPecasRoute: AuthenticatedPecasRoute,
   AuthenticatedPublicacoesRoute: AuthenticatedPublicacoesRoute,
   AuthenticatedClientesClienteIdRoute: AuthenticatedClientesClienteIdRoute,
