@@ -6,10 +6,13 @@ import {
   BookOpen,
   Users,
   Newspaper,
+  Bell,
   LogOut,
   Scale,
 } from "lucide-react";
-import type { ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
+import { toast } from "sonner";
+import { sincronizarIntimacoes } from "@/lib/intimacoes";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -20,12 +23,31 @@ const nav = [
   { to: "/pecas", label: "Peças & Recursos", icon: FileText },
   { to: "/biblioteca", label: "Biblioteca", icon: BookOpen },
   { to: "/clientes", label: "Clientes", icon: Users },
+  { to: "/intimacoes", label: "Intimações", icon: Bell },
   { to: "/publicacoes", label: "Publicações DJEN", icon: Newspaper },
 ] as const;
+
+// Garante uma única sincronização automática por carregamento do app.
+let sincronizacaoIniciada = false;
 
 export function AppLayout({ children }: { children: ReactNode }) {
   const location = useLocation();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (sincronizacaoIniciada) return;
+    sincronizacaoIniciada = true;
+    (async () => {
+      try {
+        const { data } = await supabase.auth.getUser();
+        if (!data.user) return;
+        const r = await sincronizarIntimacoes(data.user.id);
+        if (r.novas > 0) toast.info(`${r.novas} nova(s) intimação(ões) do DJEN.`);
+      } catch {
+        /* silencioso: a atualização manual segue disponível */
+      }
+    })();
+  }, []);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
